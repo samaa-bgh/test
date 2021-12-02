@@ -29,7 +29,7 @@ function PhoneBookList(){
     }
 }
 
-function BulderElement(name){
+function BuilderElement(name){
     this.element = document.createElement(name);
 
     this.className = function(className){
@@ -42,18 +42,53 @@ function BulderElement(name){
         return this;
     }
 
+    this.id = function(id){
+        this.element.id = id;
+        return this;
+    }
+
     this.value = function(value){
         this.element.value = value;
         return this;
     }
     
+    this.text = function(text){
+        this.element.textContent = text;
+        return this;
+    }
+
+    this.innerHTML = function(innerHTML){
+        this.element.innerHTML = innerHTML;
+        return this;
+    }
+
+    this.placeholder = function(placeholder){
+        this.element.placeholder = placeholder;
+        return this;
+    }
+
+    this.show = function(){
+        this.element.style.display = "";
+        return this;
+    }
+
+    this.inline = function(){
+        this.element.style.display = "inline-block";
+        return this;
+    }
+
+    this.hide = function(){
+        this.element.style.display = "none";
+        return this;
+    }
+
     this.onclick = function(fn){
         this.element.onclick = fn;
         return this;
     }
 
     this.appendTo = function(parent){
-        if(parent instanceof BulderElement){
+        if(parent instanceof BuilderElement){
             parent.build().appendChild(this.element);
             return this;
         }
@@ -68,69 +103,145 @@ function BulderElement(name){
     return this;
 }
 
-const bulder = {
+const builder = {
     create : function(name){
-        return new BulderElement(name);
+        return new BuilderElement(name);
     }
 }
 
-function BulderPhoneBook(countainer,phonebook){
+function BuilderPhoneBook(countainer,phonebook){
     this.countainer = countainer;
     this.phonebook = phonebook;
+    let ul = null;
+    let records;
+
+    function ShowList(records){
+        ul.innerHTML('');
+        records.forEach(function(record) {
+            const li = builder
+            .create("li")
+            .appendTo(ul);
+
+            builder
+            .create("div")
+            .inline()
+            .text(`name: ${record.name} _ phone: ${record.phone}`)
+            .appendTo(li);
+    
+            builder
+            .create("input")
+            .type("button")
+            .value("x")
+            .appendTo(li)
+            .onclick(function(){
+                phonebook.remove(record);
+                ShowList(phonebook.list);
+            });
+        });
+
+    }
 
     this.init = function(){
-        //const input = new BulderElement("input");
-        //input.type('text');
+        const row = builder
+        .create("div")
+        .className("row")
+        .appendTo(countainer);
 
-        const row = bulder.create("div").className("row").appendTo(countainer);
-        //this.countainer.appendChild(row);
+        const col1 = builder
+        .create("div")
+        .className("col-9")
+        .appendTo(row);
 
-        const col1 = bulder.create("div").className("col-9").appendTo(row);
-     
-        const search = bulder.create("input").type("text").appendTo(col1);
+        const search = builder
+        .create("input")
+        .type("text")
+        .appendTo(col1);
 
-        const btnSearch = bulder.create("input").type("button").value("Search").appendTo(col1);
-        btnSearch.onclick = function(){
-            phonebook.search();
-        }
+        const btnSearch = builder
+        .create("input")
+        .type("button")
+        .value("Search")
+        .appendTo(col1)
+        .onclick(function(){
+            const searchedList = phonebook.search(search.build().value);
+            ShowList(searchedList);
+        });
 
-        const btnAdd = bulder.create("input").type("button").value("Add").appendTo(col1);
-        btnAdd.onclick = function(){
-            phonebook.add();
-        }
+        const btnAdd = builder
+        .create("input")
+        .type("button")
+        .value("Add")
+        .appendTo(col1)
+        .onclick(function(){
+                col1.hide();
+                colList.hide();
+                colAdd.show();
+                });
 
-        const col2 = bulder.create("div").className("col-6").appendTo(row);
+        const colAdd = builder
+        .create("div")
+        .className("col-12")
+        .hide()
+        .appendTo(row);
 
-        const ul = bulder.create("ul").appendTo(col2);
+        const nameAdd   = builder
+        .create("input")
+        .type("text")
+        .placeholder("Name")
+        .id("nameAdd")
+        .appendTo(colAdd);
 
-        const li = bulder.create("li").appendTo(ul);
-        //li.style.display = "inline-block";
+        builder.create("br").appendTo(colAdd);
 
-        const btnRemove = bulder.create("input").type("button").value("x").appendTo(col2);
-        btnRemove.onclick =function(){
-            phonebook.remove();
-        }
-        const br = bulder.create("br").appendTo(col1);
-        //row.appendChild(countainer);
-        //row.countainer.appendChild(row);
-        const colAdd = bulder.create("div").className("col-12").appendTo(row);
-        
+        const phoneAdd  = builder
+        .create("input")
+        .type("text")
+        .placeholder("Phone")
+        .id("phoneAdd")
+        .appendTo(colAdd);
 
-        const nameAdd = bulder.create("input").type("text").appendTo(colAdd);
-        const phoneAdd = bulder.create("input").type("text").appendTo(colAdd);
+        builder.create("br").appendTo(colAdd);
+        builder.create("br").appendTo(colAdd);
+
+        const btnSave   = builder
+        .create("input")
+        .type("button")
+        .value("Save")
+        .appendTo(colAdd)
+        .onclick(function(){
+            phonebook.add(nameAdd.build().value,phoneAdd.build().value);
+            ShowList(phonebook.list);
+            col1.show();
+            colList.show();
+            colAdd.hide();
+            nameAdd.value("");
+            phoneAdd.value("");
+        });
+
+        const btnCancel = builder
+        .create("input")
+        .type("button")
+        .value("Cancel")
+        .appendTo(colAdd)
+        .onclick(function(){
+                col1.show();
+                colList.show();
+                colAdd.hide();});
+
+        const colList = builder
+        .create("div")
+        .className("col-6")
+        .appendTo(row);
+
+        ul = builder
+        .create("ul")
+        .appendTo(colList);
+
 
     };
 
 }
-/*<div class="countainer" >
 
-<div class="col-9">
-    <ul>
-        <li style="display: inline-block;">name: samaa - phone: 09876767</li>
-        <input type="button" value="x">
-    </ul>
-</div>
-</div>*/
 
 
 
@@ -138,7 +249,7 @@ function BulderPhoneBook(countainer,phonebook){
 
 const countainer = document.getElementById("main");
 const PhoneBookListApp = new PhoneBookList();
-const app = new BulderPhoneBook(countainer,PhoneBookListApp);
+const app = new BuilderPhoneBook(countainer,PhoneBookListApp);
 app.init();
 //console.log(countainer);
 //x.add("samaa",098878738);
